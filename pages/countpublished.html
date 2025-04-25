@@ -27,7 +27,7 @@
         const doc = parser.parseFromString(html, "text/html");
 
         // Count the number of links (<a> tags)
-        const links = doc.querySelectorAll("a");
+        const links = doc.querySelectorAll("a href");
 
         // Output the count to the HTML page
         document.getElementById("linkCount").textContent = `Number of links: ${links.length}`;
