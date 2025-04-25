@@ -1,72 +1,49 @@
-a<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Published Count</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+// Define the function to count `.md` files with "published: true"
+async function countPublishedInSongsFolder() {
+    const repoOwner = "Owl237";
+    const repoName = "JPrsongbook";
+    const folderPath = "songs";
+    const branch = "main";
+    const searchString = "published: true";
+
+    // GitHub API token (optional if private repository or rate limits are an issue)
+    const githubToken = ""; // Add your GitHub token here, if needed
+
+    try {
+        // Fetch the list of files in the `songs` folder
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folderPath}?ref=${branch}`;
+        const headers = githubToken ? { Authorization: `Bearer ${githubToken}` } : {};
+        const response = await fetch(apiUrl, { headers });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch directory contents: ${response.statusText}`);
         }
-        #loading {
-            font-size: 18px;
-            color: gray;
-        }
-        #result {
-            font-size: 24px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <h1>Count of Documents with "published: true"</h1>
-    <div id="loading">Calculating...</div>
-    <div id="result"></div>
 
-    <script>
-        async function countPublished() {
-            const repoOwner = "Owl237";
-            const repoName = "JPrsongbook";
-            const searchString = "published: true";
+        const files = await response.json();
 
-            const loadingElement = document.getElementById("loading");
-            const resultElement = document.getElementById("result");
+        // Filter for `.md` files
+        const markdownFiles = files.filter(file => file.type === "file" && file.name.endsWith(".md"));
 
-            try {
-                // GitHub API to list repository contents
-                const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/songs/contents?ref=main`;
+        let count = 0;
 
-                // Fetch the list of files in the repository
-                const response = await fetch(apiUrl);
-                const files = await response.json();
+        // Loop through each `.md` file and check for the string
+        for (const file of markdownFiles) {
+            const fileResponse = await fetch(file.download_url, { headers });
+            if (!fileResponse.ok) {
+                throw new Error(`Failed to fetch file ${file.name}: ${fileResponse.statusText}`);
+            }
 
-                let count = 0;
-
-                for (const file of files) {
-                     if (file.name.endsWith(".md")) { // Check if the file ends with .md
-                        // Fetch file content
-                        const fileResponse = await fetch(file.download_url);
-                        const fileContent = await fileResponse.text();
-
-                        // Count occurrences of "published: true"
-                        if (fileContent.includes(searchString)) {
-                            count++;
-                        }
-                    }
-                }
-
-                // Update the result
-                loadingElement.style.display = "none";
-                resultElement.textContent = `Number of documents: ${count}`;
-            } catch (error) {
-                loadingElement.style.display = "none";
-                resultElement.textContent = `Error: ${error.message}`;
+            const fileContent = await fileResponse.text();
+            if (fileContent.includes(searchString)) {
+                count++;
             }
         }
 
-        // Run the function on page load
-        countPublished();
-    </script>
-</body>
-</html>
+        console.log(`Number of .md files with "${searchString}": ${count}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+    }
+}
+
+// Call the function
+countPublishedInSongsFolder();
