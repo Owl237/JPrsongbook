@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Published Songs Counter</title>
+</head>
+<body>
+  <h1>Number of Published Songs: <span id="publishedCount">Loading...</span></h1>
+
+  <script>
+    async function countPublishedSongs() {
+      const folderPath = '/songs'; // Adjust this path if different
+      let publishedCount = 0;
+
+      try {
+        // Fetch the list of files in the folder (assumes a backend serves the list)
+        const response = await fetch(folderPath);
+        if (!response.ok) throw new Error(`Failed to fetch folder contents: ${response.statusText}`);
+        const files = await response.json(); // Assuming the server returns a JSON array of file names
+
+        // Loop through each file and check its content
+        for (const file of files) {
+          const filePath = `${folderPath}/${file}`;
+          const fileResponse = await fetch(filePath);
+          if (!fileResponse.ok) continue; // Skip files that cannot be fetched
+          const fileContent = await fileResponse.text();
+
+          // Check if the file contains "published: true"
+          if (fileContent.includes('published: true')) {
+            publishedCount++;
+          }
+        }
+      } catch (error) {
+        console.error('Error counting published songs:', error);
+      }
+
+      return publishedCount;
+    }
+
+    // Use the function and update the HTML
+    countPublishedSongs().then((count) => {
+      document.getElementById('publishedCount').textContent = count;
+      // You can now use 'count' as a variable in further JavaScript
+      console.log(`Number of published songs: ${count}`);
+    });
+  </script>
+
+  $count
+  ${count}
+</body>
+</html>
