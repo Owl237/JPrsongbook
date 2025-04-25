@@ -1,49 +1,71 @@
-// Define the function to count `.md` files with "published: true"
-async function countPublishedInSongsFolder() {
-    const repoOwner = "Owl237";
-    const repoName = "JPrsongbook";
-    const folderPath = "songs";
-    const branch = "main";
-    const searchString = "published: true";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Count Published Documents</title>
+</head>
+<body>
+    <h1>Count `.md` Documents in Songs Folder with "published: true"</h1>
+    <div id="loading">Calculating...</div>
+    <div id="result"></div>
 
-    // GitHub API token (optional if private repository or rate limits are an issue)
-    const githubToken = ""; // Add your GitHub token here, if needed
+    <script>
+        // Define the function to count `.md` files with "published: true"
+        async function countPublishedInSongsFolder() {
+            const repoOwner = "Owl237";
+            const repoName = "JPrsongbook";
+            const folderPath = "songs";
+            const branch = "main";
+            const searchString = "published: true";
 
-    try {
-        // Fetch the list of files in the `songs` folder
-        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folderPath}?ref=${branch}`;
-        const headers = githubToken ? { Authorization: `Bearer ${githubToken}` } : {};
-        const response = await fetch(apiUrl, { headers });
+            // GitHub API token (optional if private repository or rate limits are an issue)
+            const githubToken = ""; // Add your GitHub token here, if needed
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch directory contents: ${response.statusText}`);
+            const loadingElement = document.getElementById("loading");
+            const resultElement = document.getElementById("result");
+
+            try {
+                // Fetch the list of files in the `songs` folder
+                const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folderPath}?ref=${branch}`;
+                const headers = githubToken ? { Authorization: `Bearer ${githubToken}` } : {};
+                const response = await fetch(apiUrl, { headers });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch directory contents: ${response.statusText}`);
+                }
+
+                const files = await response.json();
+
+                // Filter for `.md` files
+                const markdownFiles = files.filter(file => file.type === "file" && file.name.endsWith(".md"));
+
+                let count = 0;
+
+                // Loop through each `.md` file and check for the string
+                for (const file of markdownFiles) {
+                    const fileResponse = await fetch(file.download_url, { headers });
+                    if (!fileResponse.ok) {
+                        throw new Error(`Failed to fetch file ${file.name}: ${fileResponse.statusText}`);
+                    }
+
+                    const fileContent = await fileResponse.text();
+                    if (fileContent.includes(searchString)) {
+                        count++;
+                    }
+                }
+
+                // Display the result
+                loadingElement.style.display = "none";
+                resultElement.textContent = `Number of .md files with "${searchString}": ${count}`;
+            } catch (error) {
+                loadingElement.style.display = "none";
+                resultElement.textContent = `Error: ${error.message}`;
+            }
         }
 
-        const files = await response.json();
-
-        // Filter for `.md` files
-        const markdownFiles = files.filter(file => file.type === "file" && file.name.endsWith(".md"));
-
-        let count = 0;
-
-        // Loop through each `.md` file and check for the string
-        for (const file of markdownFiles) {
-            const fileResponse = await fetch(file.download_url, { headers });
-            if (!fileResponse.ok) {
-                throw new Error(`Failed to fetch file ${file.name}: ${fileResponse.statusText}`);
-            }
-
-            const fileContent = await fileResponse.text();
-            if (fileContent.includes(searchString)) {
-                count++;
-            }
-        }
-
-        console.log(`Number of .md files with "${searchString}": ${count}`);
-    } catch (error) {
-        console.error(`Error: ${error.message}`);
-    }
-}
-
-// Call the function
-countPublishedInSongsFolder();
+        // Call the function
+        countPublishedInSongsFolder();
+    </script>
+</body>
+</html>
