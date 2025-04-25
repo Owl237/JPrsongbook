@@ -44,7 +44,7 @@ a<!DOCTYPE html>
                 let count = 0;
 
                 for (const file of files) {
-                    if (file.type === "md") {
+                     if (file.name.endsWith(".md")) { // Check if the file ends with .md
                         // Fetch file content
                         const fileResponse = await fetch(file.download_url);
                         const fileContent = await fileResponse.text();
