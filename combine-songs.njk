@@ -1,0 +1,7 @@
+{% for song in songs %}
+# {{ song | slice(6, -3) | capitalize }} <!-- Extracts the file name without extension -->
+
+{% include song %}
+---
+
+{% endfor %}
