@@ -1,0 +1,30 @@
+name: Run Node.js Script
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  push: # (Optional) Automatically run the workflow on pushes to the repository
+    branches:
+      - main # Only run on pushes to the 'main' branch
+
+jobs:
+  run-node-script:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Specify the Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run the Node.js script
+      - name: Execute Node.js script
+        run: node generatetagslist.js
