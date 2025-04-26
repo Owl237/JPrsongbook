@@ -1,0 +1,37 @@
+name: Render Combined Songs File
+
+# Allow manual triggering of the workflow
+on:
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Specify the version of Node.js you want to use
+
+      # Step 3: Install dependencies (if you have a package.json file with dependencies)
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run the render.js script
+      - name: Run render.js
+        run: node render.js
+
+      # Step 5: Commit and push the generated file to the repository
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add all_songs_combined.md
+          git commit -m "Update all_songs_combined.md"
+          git push
